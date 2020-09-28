@@ -40,22 +40,10 @@
          term (send self :random-param term-range)
          amplitude (send self :random-param amplitude-range))
    )
-  (:term-finished
-   ()
-   (> (send self :time) term)
-   )
-  (:reset-time
-   ()
-   (setq time-index 1)
-   )
-  (:time
-   ()
-   (* dt time-index)
-   )
-  (:increment-time
-   ()
-   (setq time-index (1+ time-index))
-   )
+  (:term-finished () (> (send self :time) term))
+  (:reset-time () (setq time-index 1))
+  (:time () (* dt time-index))
+  (:increment-time () (setq time-index (1+ time-index)))
   )
 
 (defclass constant-trajectory-generator
