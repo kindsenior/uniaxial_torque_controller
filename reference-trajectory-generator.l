@@ -18,6 +18,10 @@
          )
    (send self :reset-time)
    )
+  (:trajectory-type
+   ()
+   (reverse (subseq (reverse (format nil "~s" (send (class self) :name))) 21)) ;; remove "-trajectory-generator"(= 21 chars) from class name
+   )
   (:reset-generator
    (current-value)
    ;; (warn ":reset-generator ~a~%" current-value)
@@ -150,10 +154,12 @@
    ()
    ;; (warn ":check-and-reset-generator ~a~%" current-value)
    (cond ((or (not target-generator) (send target-generator :term-finished))
-          (if target-generator (warn "time: ~a~%" (send target-generator :time)))
           (send self :set-random-function)
           (send self :reset-generator current-value)
-          (warn "set func to ~a (value: ~a, term: ~a)~%" target-generator current-value (send target-generator :get-val 'term))
+          (warn "time: ~5a, func: ~15a (init value: ~10a, term: ~10a, amp: ~10a, sgn: ~2a)~%"
+                (send self :time) (send target-generator :trajectory-type) current-value
+                (send target-generator :get-val 'term) (send target-generator :get-val 'amplitude) (send target-generator :get-val 'sgn)
+                )
           ))
    )
   (:reset-time () (setq time-index 0))
