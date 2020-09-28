@@ -11,9 +11,9 @@
 
 (defmethod trajectory-generator
   (:init
-   (&rest args)
-   (setq dt 0.001
-         term-range #f(0 2)
+   (&rest args &key (dt 0.001) &allow-other-keys)
+   (send self :set-val 'dt dt)
+   (setq term-range #f(0 2)
          amplitude-range #(0 12)
          )
    (send self :reset-time)
@@ -98,8 +98,8 @@
   )
 (defmethod trig-function-trajectory-generator
   (:init
-   ()
-   (send-super :init)
+   (&rest args &key &allow-other-keys)
+   (send-super* :init args)
    (setq frequency-range #f(0.5 2))
    (send self :set-random-params)
    )
@@ -126,15 +126,16 @@
   )
 (defmethod reference-trajectory-generator
   (:init
-   ()
+   (&rest args &key &allow-other-keys)
    (setq current-value 0
          trajectory-generator-choice-list
-         (list (instance constant-trajectory-generator :init)
-               (instance step-trajectory-generator :init)
-               (instance linear-trajectory-generator :init)
-               (instance trig-function-trajectory-generator :init)
+         (list (instance* constant-trajectory-generator      :init args)
+               (instance* step-trajectory-generator          :init args)
+               (instance* linear-trajectory-generator        :init args)
+               (instance* trig-function-trajectory-generator :init args)
                )
          )
+   (send self :reset-time)
    )
   (:set-random-function
    ()
@@ -154,8 +155,12 @@
           (warn "set func to ~a (value: ~a, term: ~a)~%" target-generator current-value (send target-generator :get-val 'term))
           ))
    )
+  (:reset-time () (setq time-index 0))
+  (:time ()   (* (send target-generator :get-val 'dt) time-index))
+  (:increment-time () (setq time-index (1+ time-index)))
   (:process-cycle
    ()
+   (send self :increment-time)
    (setq current-value (send target-generator :process-cycle))
    current-value
    )
