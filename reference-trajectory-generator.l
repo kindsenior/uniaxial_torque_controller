@@ -4,7 +4,7 @@
   :super object
   :slots (dt
           time-index
-          term term-range amplitude amplitude-range
+          sgn term term-range amplitude amplitude-range
           ret-value init-value
           )
   )
@@ -32,7 +32,8 @@
   (:set-random-params
    ()
    ;; (warn ":set-random-params~%")
-   (setq term (send self :random-param term-range)
+   (setq sgn (expt -1 (random 2)) ;; -1 or 1
+         term (send self :random-param term-range)
          amplitude (send self :random-param amplitude-range))
    )
   (:term-finished
@@ -73,7 +74,7 @@
   (:process-cycle
    ()
    (send-super :increment-time)
-   (+ init-value amplitude)
+   (+ init-value (* sgn amplitude))
    )
   )
 
@@ -84,7 +85,7 @@
 (defmethod linear-trajectory-generator
   (:process-cycle
    ()
-   (setq ret-value (+ init-value (* amplitude (/ (send self :time) term))))
+   (setq ret-value (+ init-value (* sgn amplitude (/ (send self :time) term))))
    (send-super :increment-time)
    ret-value
    )
