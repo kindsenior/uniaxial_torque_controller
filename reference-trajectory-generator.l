@@ -46,7 +46,7 @@
    )
   (:time
    ()
-   (/ (* dt time-index) term)
+   (* dt time-index)
    )
   (:increment-time
    ()
