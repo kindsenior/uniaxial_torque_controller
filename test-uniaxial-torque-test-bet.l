@@ -50,6 +50,8 @@
        (pgain-vec  #f(0))
        (dgain-vec #f(0))
 
+       (cur-force-vec #f(0 0 0 0 0 0))
+
        ;; mass property (mass [kg], pos [m])
        ;; 1.25 kg
        (mass-vec    #f(0.432 0.05 1.25))
@@ -68,6 +70,9 @@
   (do-until-key-w/o-gc
    (setq cur-angle-rad (elt (read-angle-shm #f(0)) 0)
          cur-angle (rad2deg cur-angle-rad)
+
+         cur-force-x (elt (read-force-sensor 0 #f(0 0 0 0 0 0)) 0)
+         ;; cur-force (read-force-sensor)
          )
 
    ;; command
