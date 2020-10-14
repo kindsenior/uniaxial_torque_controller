@@ -37,6 +37,8 @@
        (print-cycle (* 1000 1000)) ;; 1 sec = 1000 msec = 1e6 usec
        (step (round (/ print-cycle *context-cycle*)))
 
+       (angle-range #f(30 150))
+
        ;; (ref-angle 20) ;; deg
        (ref-angle 90) ;; deg
        (prev-ref-angle initial-angle)
@@ -74,6 +76,10 @@
          cur-force-x (elt (read-force-sensor 0 #f(0 0 0 0 0 0)) 0)
          ;; cur-force (read-force-sensor)
          )
+
+   ;; check
+   (if (or (< cur-angle (elt angle-range 0)) (> cur-angle (elt angle-range 1)))
+       (progn (warning-message 1 "[Error] Angle range over (~s)!!!~%" angle-range) (return)))
 
    ;; command
    (cond
