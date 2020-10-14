@@ -122,11 +122,13 @@
              (/ (get-stat-norm-realtime) 1000)
              (/ (get-stat-max-realtime) 1000))
      ;; angle
-     (format t "cur: ~a [rad] ~a [deg]~%" cur-angle-rad cur-angle)
-     (format t "com: ~a [rad] ~a [deg]~%" com-angle-rad com-angle)
+     (format t "angle~%")
+     (format t " cur: ~a [rad] ~a [deg]~%" cur-angle-rad cur-angle)
+     (format t " com: ~a [rad] ~a [deg]~%" com-angle-rad com-angle)
      ;; torque
-     ;; (format t "cur: ~a [Nm]~%" cur-torque)
-     (format t "com: ~a [Nm]~%" com-torque)
+     (format t "torque~%")
+     (format t " cur: ~a [Nm]~%" cur-force-x)
+     (format t " com: ~a [Nm]~%" com-torque)
 
      (format t "ramain count: ~a~%" remain-count)
      (format t "~%")
