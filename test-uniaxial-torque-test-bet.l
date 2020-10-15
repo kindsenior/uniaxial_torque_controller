@@ -78,7 +78,8 @@
          )
 
    ;; check
-   (if (or (< cur-angle (elt angle-range 0)) (> cur-angle (elt angle-range 1)))
+   (if (and (or (< cur-angle (elt angle-range 0)) (> cur-angle (elt angle-range 1)))
+            (not (equal cur-mode :pos)))
        (progn (warning-message 1 "[Error] Angle range over (~s)!!!~%" angle-range) (return)))
 
    ;; command

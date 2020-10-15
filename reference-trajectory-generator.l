@@ -22,6 +22,7 @@
    ()
    (reverse (subseq (reverse (format nil "~s" (send (class self) :name))) 21)) ;; remove "-trajectory-generator"(= 21 chars) from class name
    )
+  (:format-param () (format nil "~a:~2,2fsec" (send self :trajectory-type) (send self :get-val 'term)))
   (:reset-generator
    (current-value)
    ;; (warn ":reset-generator ~a~%" current-value)
@@ -51,6 +52,7 @@
   :slots ()
   )
 (defmethod constant-trajectory-generator
+  (:format-param () (format nil "~a" (send-super :format-param)))
   (:process-cycle
    ()
    (send-super :increment-time)
@@ -63,6 +65,7 @@
   :slots ()
   )
 (defmethod step-trajectory-generator
+  (:format-param () (format nil "~a,~2,2fA" (send-super :format-param) (* sgn amplitude)))
   (:process-cycle
    ()
    (send-super :increment-time)
@@ -75,6 +78,7 @@
   :slots ()
   )
 (defmethod linear-trajectory-generator
+  (:format-param () (format nil "~a,~2,2f" (send-super :format-param) (* sgn amplitude)))
   (:process-cycle
    ()
    (setq ret-value (+ init-value (* sgn amplitude (/ (send self :time) term))))
@@ -103,6 +107,7 @@
    (send-super :set-random-params)
    (setq offset-value (* -1 sgn amplitude (sin phase-offset)))
    )
+  (:format-param () (format nil "~a,~2,2fA,~2,2frad,~2,2fHz" (send-super :format-param) (* sgn amplitude) phase-offset frequency))
   (:process-cycle
    ()
    (setq ret-value (+ init-value offset-value (* sgn amplitude (sin (+ phase-offset (* 2 pi frequency (send self :time)))))))
@@ -116,7 +121,7 @@
   :slots (trajectory-generator-choice-list
           target-generator
           current-value
-          reference-trajectory-list time-list
+          reference-trajectory-list time-list param-format-list
           )
   )
 (defmethod reference-trajectory-generator
@@ -137,6 +142,7 @@
    (send self :reset-time)
    (setq reference-trajectory-list nil
          time-list nil
+         param-format-list nil
          )
    )
   (:set-random-function
@@ -157,6 +163,7 @@
                 (send self :time) (send target-generator :trajectory-type) current-value
                 (send target-generator :get-val 'term) (send target-generator :get-val 'amplitude) (send target-generator :get-val 'sgn)
                 )
+          (push-back (send target-generator :format-param) param-format-list)
           ))
    )
   (:reset-time () (setq time-index 0))
@@ -169,18 +176,27 @@
    (push-back (setq current-value (send target-generator :process-cycle)) reference-trajectory-list) ;; set current-value and generate trajectory list
    )
   (:generate-reference-trajectory
-   (&key (total-time 5))
+   (&key (total-time 5) &allow-other-keys)
    (do-until-key
     (send self :check-and-reset-generator)
     (if (=  (send self :time) total-time) (return))
     (send *tg* :process-cycle)
     )
    )
+  (:param-format () (reduce #'(lambda (ret param-format) (format nil "~a_~a" ret param-format)) param-format-list))
   )
 
-(defun generate-reference-trajectory (&rest args)
+(defun generate-reference-trajectory (&rest args &key (fname nil) &allow-other-keys)
   (setq *tg* (instance reference-trajectory-generator :init))
   (send* *tg* :generate-reference-trajectory args)
   (graph-view (list (send *tg* :get-val 'reference-trajectory-list))
               (send *tg* :get-val 'time-list))
+
+  ;; save
+   (setq fname (format nil "~a.l" (if fname fname (send *tg* :param-format))))
+   (warn "save the generate reference trajectory to ~a" fname)
+   (dump-loadable-structure fname *tg*)
+   (unix:system (format nil "sudo chown k-kojima:k-kojima ~a~%" fname))
+   (unix:system (format nil "sudo chmod 664 ~a~%" fname))
+   nil
   )
