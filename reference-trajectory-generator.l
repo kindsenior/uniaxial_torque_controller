@@ -115,7 +115,9 @@
   :super object
   :slots (trajectory-generator-choice-list
           target-generator
-          current-value)
+          current-value
+          reference-trajectory-list time-list
+          )
   )
 (defmethod reference-trajectory-generator
   (:init
@@ -128,7 +130,14 @@
                (instance* trig-function-trajectory-generator :init args)
                )
          )
+   (send self :setup)
+   )
+  (:setup
+   ()
    (send self :reset-time)
+   (setq reference-trajectory-list nil
+         time-list nil
+         )
    )
   (:set-random-function
    ()
@@ -156,7 +165,22 @@
   (:process-cycle
    ()
    (send self :increment-time)
-   (setq current-value (send target-generator :process-cycle))
-   current-value
+   (push-back (send self :time) time-list) ;; generate time list
+   (push-back (setq current-value (send target-generator :process-cycle)) reference-trajectory-list) ;; set current-value and generate trajectory list
    )
+  (:generate-reference-trajectory
+   (&key (total-time 5))
+   (do-until-key
+    (send self :check-and-reset-generator)
+    (if (=  (send self :time) total-time) (return))
+    (send *tg* :process-cycle)
+    )
+   )
+  )
+
+(defun generate-reference-trajectory (&rest args)
+  (setq *tg* (instance reference-trajectory-generator :init))
+  (send* *tg* :generate-reference-trajectory args)
+  (graph-view (list (send *tg* :get-val 'reference-trajectory-list))
+              (send *tg* :get-val 'time-list))
   )
