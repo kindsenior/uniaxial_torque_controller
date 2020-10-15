@@ -101,11 +101,11 @@
    (setq phase-offset (random (* 2 pi))
          frequency (send-super :random-param frequency-range))
    (send-super :set-random-params)
-   (setq offset-value (* -1 term (sin phase-offset)))
+   (setq offset-value (* -1 sgn amplitude (sin phase-offset)))
    )
   (:process-cycle
    ()
-   (setq ret-value (+ init-value offset-value (* term (sin (+ phase-offset (* 2 pi frequency (send self :time)))))))
+   (setq ret-value (+ init-value offset-value (* sgn amplitude (sin (+ phase-offset (* 2 pi frequency (send self :time)))))))
    (send-super :increment-time)
    ret-value
    )
