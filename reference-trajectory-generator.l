@@ -22,7 +22,7 @@
    ()
    (reverse (subseq (reverse (format nil "~s" (send (class self) :name))) 21)) ;; remove "-trajectory-generator"(= 21 chars) from class name
    )
-  (:format-param () (format nil "~a:~2,2fsec" (send self :trajectory-type) (send self :get-val 'term)))
+  (:format-param () (format nil "~a~2,2fsec" (send self :trajectory-type) (send self :get-val 'term)))
   (:reset-generator
    (current-value)
    ;; (warn ":reset-generator ~a~%" current-value)
