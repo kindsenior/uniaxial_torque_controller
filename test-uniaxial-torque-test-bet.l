@@ -39,7 +39,7 @@
 
           cur-mode
 
-          reference-torque-queue
+          reference-trajectory-generator reference-torque-queue
           )
   )
 (defmethod uniaxial-torque-test-bet-controller
@@ -79,6 +79,7 @@
 
   (:reset
    (&rest args &key (tq-gen (if (boundp '*tg*) *tg* nil)) &allow-other-keys)
+   (send self :set-val 'reference-trajectory-generator tq-gen)
    (send self :set-val 'reference-torque-queue (if tq-gen (send tq-gen :get-val 'reference-trajectory-list) nil))
    (setq cur-mode :pos)
    )
@@ -198,11 +199,23 @@
 
    (sys::gc)
    )
+
+  (:save-log
+   (&rest args &key (fname nil) &allow-other-keys)
+   (let* ((tq-gen (send self :get-val 'reference-trajectory-generator))
+          (ref-trajectory-fname (if tq-gen (send tq-gen :file-name) ""))
+          (saved-shm-log-name (save-shm-log :fname (format nil "~a~a" fname (if tq-gen (format nil "_~a" ref-trajectory-fname) ""))))
+          (log-path (reg-replace "[^/]*.log$" ""  saved-shm-log-name))
+          )
+     (unix:system (format nil "chown k-kojima:k-kojima -R ~a" log-path))
+     (if tq-gen (unix:system (format nil "cp ~a ~a" ref-trajectory-fname log-path)))
+     )
+   )
   )
 
 (defun test-uniaxial-torque-test-bet (&rest args &key (fname nil) &allow-other-keys)
   (send* *uc* :start-test args)
-  (if fname (save-shm-log :fname fname))
+  (if fname (send* *uc* :save-log args))
   )
 
 (defun setup-uniaxial-torque-test-bet ()
