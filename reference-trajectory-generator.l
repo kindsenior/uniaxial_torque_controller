@@ -122,6 +122,7 @@
           target-generator
           current-value
           reference-trajectory-list time-list param-format-list
+          total-time
           )
   )
 (defmethod reference-trajectory-generator
@@ -143,6 +144,7 @@
    (setq reference-trajectory-list nil
          time-list nil
          param-format-list nil
+         total-time 0
          )
    )
   (:set-random-function
@@ -177,13 +179,14 @@
    )
   (:generate-reference-trajectory
    (&key (total-time 5) &allow-other-keys)
+   (send self :set-val 'total-time total-time)
    (do-until-key
     (send self :check-and-reset-generator)
     (if (=  (send self :time) total-time) (return))
     (send *tg* :process-cycle)
     )
    )
-  (:param-format () (reduce #'(lambda (ret param-format) (format nil "~a_~a" ret param-format)) param-format-list))
+  (:param-format () (format nil "~asec_~a" total-time (reduce #'(lambda (ret param-format) (format nil "~a_~a" ret param-format)) param-format-list)))
   )
 
 (defun generate-reference-trajectory (&rest args &key (fname nil) &allow-other-keys)
@@ -193,7 +196,7 @@
               (send *tg* :get-val 'time-list))
 
   ;; save
-   (setq fname (format nil "~a.l" (if fname fname (send *tg* :param-format))))
+   (setq fname (format nil "~a~a.l" (if fname (concatenate string fname "_") "") (send *tg* :param-format)))
    (warn "save the generate reference trajectory to ~a" fname)
    (dump-loadable-structure fname *tg*)
    (unix:system (format nil "sudo chown k-kojima:k-kojima ~a~%" fname))
