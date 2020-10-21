@@ -123,6 +123,7 @@
           current-value
           reference-trajectory-list time-list param-format-list
           total-time
+          file-name
           )
   )
 (defmethod reference-trajectory-generator
@@ -145,6 +146,7 @@
          time-list nil
          param-format-list nil
          total-time 0
+         file-name "reference-trajectory.l"
          )
    )
   (:set-random-function
@@ -187,6 +189,11 @@
     )
    )
   (:param-format () (format nil "~asec_~a" total-time (reduce #'(lambda (ret param-format) (format nil "~a_~a" ret param-format)) param-format-list)))
+  (:file-name
+   (&optional fname)
+   (if fname (send self :set-val 'file-name fname))
+   (send self :get-val 'file-name)
+   )
   )
 
 (defun generate-reference-trajectory (&rest args &key (fname nil) &allow-other-keys)
@@ -195,11 +202,12 @@
   (graph-view (list (send *tg* :get-val 'reference-trajectory-list))
               (send *tg* :get-val 'time-list))
 
-  ;; save
-   (setq fname (format nil "~a~a.l" (if fname (concatenate string fname "_") "") (send *tg* :param-format)))
-   (warn "save the generate reference trajectory to ~a" fname)
-   (dump-loadable-structure fname *tg*)
-   (unix:system (format nil "sudo chown k-kojima:k-kojima ~a~%" fname))
-   (unix:system (format nil "sudo chmod 664 ~a~%" fname))
-   nil
+  ;; save to .l
+  (let ( (fname (send *tg* :file-name (format nil "~a~a.l" (if fname (concatenate string fname "_") "") (send *tg* :param-format)))) )
+    (warn "save the generate reference trajectory to ~a" (send *tg* :file-name))
+    (dump-loadable-structure fname *tg*)
+    (unix:system (format nil "sudo chown k-kojima:k-kojima ~a~%" fname))
+    (unix:system (format nil "sudo chmod 664 ~a~%" fname))
+    )
+  nil
   )
