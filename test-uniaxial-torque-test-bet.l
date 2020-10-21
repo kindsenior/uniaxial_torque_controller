@@ -12,6 +12,7 @@
        (if strm (read-line strm nil nil)))))
 
 (load "package://control_tools/play-hrpsysfile.l")
+(load "reference-trajectory-generator.l")
 
 ;; non-realtime config
 (load "package://trans_ros_bridge/euslisp/eus-shm-interface.l")
@@ -37,6 +38,8 @@
           mass-vec cog-pos-vec gravity-acc
 
           cur-mode
+
+          reference-torque-queue
           )
   )
 (defmethod uniaxial-torque-test-bet-controller
@@ -70,11 +73,20 @@
          cur-mode :pos
          )
    (format t "context cycle: ~a, print cycle: ~a[useq] =~a[msec], step-count: ~a~%" context-cycle-us print-cycle (/ print-cycle 1000) step-count)
+
+   (send self :reset)
+   )
+
+  (:reset
+   (&rest args &key (tq-gen (if (boundp '*tg*) *tg* nil)) &allow-other-keys)
+   (send self :set-val 'reference-torque-queue (if tq-gen (send tq-gen :get-val 'reference-trajectory-list) nil))
+   (setq cur-mode :pos)
    )
 
   (:start-test
-   ()
+   (&rest args &key (return-if-ref-nil nil) &allow-other-keys)
    ;; initial procedure
+   (send* self :reset args)
    (reset-stat-realtime)
    (sys::gc)
    (start-realtime)
@@ -104,6 +116,8 @@
     (if (and (or (< cur-angle (elt angle-range 0)) (> cur-angle (elt angle-range 1)))
              (not (equal cur-mode :pos)))
         (progn (warning-message 1 "[Error] Angle range over (~s)!!!~%" angle-range) (return)))
+    (if (and return-if-ref-nil (not reference-torque-queue) (equal cur-mode :fftq))
+        (progn (warning-message 3 "[Info] Torque commands finished!!!~%") (return)))
 
     ;; command
     (cond
@@ -123,11 +137,13 @@
        )
       )
      ((eq cur-mode :fftq) ;; fftq mode
-      (setq com-angle cur-angle
-            com-angle-rad (deg2rad com-angle)
-            gravity-torque (* (v. cog-pos-vec mass-vec) (sin cur-angle-rad) gravity-acc)
-            com-torque gravity-torque
-            )
+      (let ( (ext-torque (if reference-torque-queue (pop reference-torque-queue) 0)) )
+        (setq com-angle cur-angle
+              com-angle-rad (deg2rad com-angle)
+              gravity-torque (* (v. cog-pos-vec mass-vec) (sin cur-angle-rad) gravity-acc)
+              com-torque (+ gravity-torque ext-torque)
+              )
+        )
       )
      (t)
      )
@@ -185,7 +201,7 @@
   )
 
 (defun test-uniaxial-torque-test-bet (&rest args &key (fname nil) &allow-other-keys)
-  (send *uc* :start-test)
+  (send* *uc* :start-test args)
   (if fname (save-shm-log :fname fname))
   )
 
