@@ -191,10 +191,10 @@
   (:format-param () (format nil "~asec_~a" total-time (reduce #'(lambda (ret param-format) (format nil "~a_~a" ret param-format)) param-format-list)))
   (:print-param
    ()
-   (warn "[trajectory generator]~%")
-   (warn " file: ~a~%" (send self :file-name))
-   (warn " total time: ~a sec~%" total-time)
-   (mapc #'(lambda (param-format) (warn "  ~a~%" param-format)) param-format-list)
+   (format t "[trajectory generator]~%")
+   (format t " file: ~a~%" (send self :file-name))
+   (format t " total time: ~a sec~%" total-time)
+   (mapc #'(lambda (param-format) (format t "  ~a~%" param-format)) param-format-list)
    )
   (:file-name
    (&optional fname)
