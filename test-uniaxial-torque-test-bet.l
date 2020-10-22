@@ -79,6 +79,7 @@
 
   (:reset
    (&rest args &key (tq-gen (if (boundp '*tg*) *tg* nil)) &allow-other-keys)
+   (if tq-gen (send tq-gen :print-param))
    (send self :set-val 'reference-trajectory-generator tq-gen)
    (send self :set-val 'reference-torque-queue (if tq-gen (send tq-gen :get-val 'reference-trajectory-list) nil))
    (setq cur-mode :pos)
@@ -203,6 +204,7 @@
   (:save-log
    (&rest args &key (fname nil) &allow-other-keys)
    (let* ((tq-gen (send self :get-val 'reference-trajectory-generator))
+          (if tq-gen (send tq-gen :print-param))
           (ref-trajectory-fname (if tq-gen (send tq-gen :file-name) ""))
           (saved-shm-log-name (save-shm-log :fname (format nil "~a~a" fname (if tq-gen (format nil "_~a" ref-trajectory-fname) ""))))
           (log-path (reg-replace "[^/]*.log$" ""  saved-shm-log-name))
