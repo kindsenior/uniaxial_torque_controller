@@ -86,7 +86,7 @@
    )
 
   (:start-test
-   (&rest args &key (return-if-ref-nil nil) &allow-other-keys)
+   (&rest args &key (return-if-ref-nil t) &allow-other-keys)
    ;; initial procedure
    (send* self :reset args)
    (reset-stat-realtime)
