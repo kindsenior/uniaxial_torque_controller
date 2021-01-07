@@ -39,7 +39,7 @@
   (:set-random-params
    ()
    ;; (warn ":set-random-params~%")
-   (setq sgn (expt -1 (random 2)) ;; -1 or 1
+   (setq sgn (if (> init-value 0) -1 1) ;; -1 (init-value > 0) : 1 (init-value <= 0)
          term (send self :random-param term-range)
          amplitude (send self :random-param amplitude-range))
    )
@@ -106,6 +106,7 @@
    (send-super :set-random-params)
    (setq phase-offset (random (* 2 pi))
          frequency (send-super :random-param frequency-range))
+   (if (> (* init-value (send self :eval-function (+ (send self :time) term))) 0) (setq sgn (* sgn -1))) ;; flip sgn depending on the final value f(term)
    )
   (:format-param () (format nil "~a,~2,2fA,~2,2frad,~2,2fHz" (send-super :format-param) (* sgn amplitude) phase-offset frequency))
   (:eval-function (time) (* sgn amplitude (- (sin (+ phase-offset (* 2 pi frequency time))) (sin phase-offset)))) ;; f(0) = 0 (without init-value)
