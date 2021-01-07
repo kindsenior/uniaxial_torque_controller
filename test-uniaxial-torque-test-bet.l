@@ -210,7 +210,7 @@
           (log-path (reg-replace "[^/]*.log$" ""  saved-shm-log-name))
           )
      (unix:system (format nil "chown k-kojima:k-kojima -R ~a" log-path))
-     (if tq-gen (unix:system (format nil "cp ~a ~a" ref-trajectory-fname log-path)))
+     (if tq-gen (unix:system (format nil "cp ~a.l ~a" ref-trajectory-fname log-path)))
      )
    )
   )

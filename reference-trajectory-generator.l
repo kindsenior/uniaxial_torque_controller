@@ -148,7 +148,7 @@
          time-list nil
          param-format-list nil
          total-time 0
-         file-name "reference-trajectory.l"
+         file-name "reference-trajectory"
          )
    )
   (:set-random-function
@@ -220,7 +220,7 @@
   ;; save to .l
   (let ( (fname (send *tg* :file-name (format nil "~asec_~a" (send *tg* :get-val 'total-time) (if fname (send *tg* :file-name fname) (send *tg* :file-name))))) )
     (warn "save the generate reference trajectory to ~a~%" (send *tg* :file-name))
-    (dump-loadable-structure fname *tg*)
+    (dump-loadable-structure (format nil "~a.l" fname *tg*))
     (unix:system (format nil "sudo chown k-kojima:k-kojima ~a~%" fname))
     (unix:system (format nil "sudo chmod 664 ~a~%" fname))
     )
