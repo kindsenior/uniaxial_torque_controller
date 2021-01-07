@@ -203,13 +203,17 @@
    (if fname (send self :set-val 'file-name fname))
    (send self :get-val 'file-name)
    )
+  (:plot-graph
+   ()
+   (graph-view (list (send self :get-val 'reference-trajectory-list))
+               (send self :get-val 'time-list))
+   )
   )
 
 (defun generate-reference-trajectory (&rest args &key (fname nil) &allow-other-keys)
   (setq *tg* (instance reference-trajectory-generator :init))
   (send* *tg* :generate-reference-trajectory args)
-  (graph-view (list (send *tg* :get-val 'reference-trajectory-list))
-              (send *tg* :get-val 'time-list))
+  (send *tg* :plot-graph)
 
   ;; save to .l
   (let ( (fname (send *tg* :file-name (format nil "~asec_~a" (send *tg* :get-val 'total-time) (if fname (send *tg* :file-name fname) (send *tg* :file-name))))) )
