@@ -210,6 +210,8 @@
    )
   )
 
+;; Usage
+;; (generate-reference-trajectory :fname "test-reference-trajectory" :total-time 5)
 (defun generate-reference-trajectory (&rest args &key (fname nil) &allow-other-keys)
   (setq *tg* (instance reference-trajectory-generator :init))
   (send* *tg* :generate-reference-trajectory args)
