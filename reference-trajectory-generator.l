@@ -15,6 +15,8 @@
    (send self :set-val 'dt dt)
    (setq term-range #f(0 2)
          amplitude-range #(0 12)
+         sgn 1 term 1 amplitude 1
+         init-value 0
          )
    (send self :reset-time)
    )
@@ -98,7 +100,6 @@
    (&rest args &key &allow-other-keys)
    (send-super* :init args)
    (setq frequency-range #f(0.5 2))
-   (send self :set-random-params)
    )
   (:set-random-params
    ()
