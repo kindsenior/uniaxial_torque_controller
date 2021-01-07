@@ -85,6 +85,19 @@
    (setq cur-mode :pos)
    )
 
+  (:servo-on
+   ()
+   (warning-message 1 "Servo on!~%")
+   (unix:system "rosrun trans_vm servo_on 0")
+   (unix:system "rosrun trans_vm servo_off 0")
+   (unix:system "rosrun trans_vm servo_on 0")
+   )
+  (:servo-off
+   ()
+   (warning-message 1 "Servo off~%")
+   (unix:system "rosrun trans_vm servo_off 0")
+   )
+
   (:start-test
    (&rest args &key (return-if-ref-nil t) &allow-other-keys)
    ;; initial procedure
@@ -216,7 +229,9 @@
   )
 
 (defun test-uniaxial-torque-test-bet (&rest args &key (fname nil) &allow-other-keys)
+  (send *uc* :servo-on)
   (send* *uc* :start-test args)
+  (send *uc* :servo-off)
   (if fname (send* *uc* :save-log args))
   )
 
