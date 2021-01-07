@@ -13,8 +13,8 @@
   (:init
    (&rest args &key (dt 0.001) &allow-other-keys)
    (send self :set-val 'dt dt)
-   (setq term-range #f(0 2)
-         amplitude-range #(0 12)
+   (setq term-range #f(0.5 2)
+         amplitude-range #(0 1)
          sgn 1 term 1 amplitude 1
          init-value 0
          )
