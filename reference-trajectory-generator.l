@@ -29,8 +29,8 @@
    (current-value)
    ;; (warn ":reset-generator ~a~%" current-value)
    (setq init-value current-value)
+   (send self :reset-time) ;; reset time before setting ramdom parameters (for using time for setting parameters)
    (send self :set-random-params)
-   (send self :reset-time)
    )
   (:random-param
    (value-range)
@@ -103,9 +103,9 @@
    )
   (:set-random-params
    ()
+   (send-super :set-random-params)
    (setq phase-offset (random (* 2 pi))
          frequency (send-super :random-param frequency-range))
-   (send-super :set-random-params)
    )
   (:format-param () (format nil "~a,~2,2fA,~2,2frad,~2,2fHz" (send-super :format-param) (* sgn amplitude) phase-offset frequency))
   (:eval-function (time) (* sgn amplitude (- (sin (+ phase-offset (* 2 pi frequency time))) (sin phase-offset)))) ;; f(0) = 0 (without init-value)
