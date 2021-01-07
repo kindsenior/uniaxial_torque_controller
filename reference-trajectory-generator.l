@@ -93,7 +93,7 @@
   :super trajectory-generator
   :slots (phase-offset
           frequency frequency-range
-          offset-value)
+          )
   )
 (defmethod trig-function-trajectory-generator
   (:init
@@ -106,12 +106,12 @@
    (setq phase-offset (random (* 2 pi))
          frequency (send-super :random-param frequency-range))
    (send-super :set-random-params)
-   (setq offset-value (* -1 sgn amplitude (sin phase-offset)))
    )
   (:format-param () (format nil "~a,~2,2fA,~2,2frad,~2,2fHz" (send-super :format-param) (* sgn amplitude) phase-offset frequency))
+  (:eval-function (time) (* sgn amplitude (- (sin (+ phase-offset (* 2 pi frequency time))) (sin phase-offset)))) ;; f(0) = 0 (without init-value)
   (:process-cycle
    ()
-   (setq ret-value (+ init-value offset-value (* sgn amplitude (sin (+ phase-offset (* 2 pi frequency (send self :time)))))))
+   (setq ret-value (+ init-value (send self :eval-function (send self :time))))
    (send-super :increment-time)
    ret-value
    )
